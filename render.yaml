@@ -29,7 +29,6 @@ services:
   - type: web
     name: dailyconnect-frontend
     runtime: static
-    plan: free
     rootDir: frontend
     buildCommand: npm install && npm run build
     staticPublishPath: dist
