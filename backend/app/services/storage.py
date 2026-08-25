@@ -33,7 +33,11 @@ def compress_image(data: bytes) -> bytes:
 
 
 def cloudinary_configured() -> bool:
-    return all((settings.cloudinary_cloud_name, settings.cloudinary_api_key, settings.cloudinary_api_secret))
+    return bool(settings.cloudinary_url)
+
+
+def configure_cloudinary() -> None:
+    cloudinary.config(cloudinary_url=settings.cloudinary_url, secure=True)
 
 
 async def upload_image(file: UploadFile, prefix: str) -> str:
@@ -52,7 +56,7 @@ async def upload_image(file: UploadFile, prefix: str) -> str:
         local_file.parent.mkdir(parents=True, exist_ok=True)
         local_file.write_bytes(data)
         return key
-    cloudinary.config(cloud_name=settings.cloudinary_cloud_name, api_key=settings.cloudinary_api_key, api_secret=settings.cloudinary_api_secret, secure=True)
+    configure_cloudinary()
     result = cloudinary.uploader.upload(BytesIO(data), folder=prefix, resource_type="image", format="jpg", quality="auto")
     return result["public_id"]
 
@@ -61,14 +65,14 @@ def public_url(key: str | None) -> str | None:
     if not key:
         return None
     if cloudinary_configured():
-        cloudinary.config(cloud_name=settings.cloudinary_cloud_name, api_key=settings.cloudinary_api_key, api_secret=settings.cloudinary_api_secret, secure=True)
+        configure_cloudinary()
         return cloudinary.utils.cloudinary_url(key, secure=True, resource_type="image", format="jpg")[0]
     return f"{settings.api_url.rstrip('/')}/uploads/{key}"
 
 
 def delete_image(key: str) -> None:
     if cloudinary_configured():
-        cloudinary.config(cloud_name=settings.cloudinary_cloud_name, api_key=settings.cloudinary_api_key, api_secret=settings.cloudinary_api_secret, secure=True)
+        configure_cloudinary()
         cloudinary.uploader.destroy(key, resource_type="image")
         return
     local_file = LOCAL_UPLOAD_DIR / key

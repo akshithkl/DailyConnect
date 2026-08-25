@@ -9,9 +9,7 @@ class Settings(BaseSettings):
     access_token_expire_minutes: int = 60 * 24
     frontend_url: str = "http://localhost:5173"
     api_url: str = "http://127.0.0.1:8000"
-    cloudinary_cloud_name: str = ""
-    cloudinary_api_key: str = ""
-    cloudinary_api_secret: str = ""
+    cloudinary_url: str = ""
 
     model_config = SettingsConfigDict(env_file=".env", extra="ignore")
 
