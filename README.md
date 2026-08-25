@@ -74,8 +74,8 @@ From PowerShell:
 
 ```powershell
 cd E:\DailyConnect
-C:\Users\akshi\AppData\Local\Programs\Python\Python314\python.exe -m pip install -r backend\requirements.txt
-C:\Users\akshi\AppData\Local\Programs\Python\Python314\python.exe -m uvicorn app.main:app --app-dir backend --reload --host 127.0.0.1 --port 8000
+C:\Users\axxx\AppData\Local\Programs\Python\Python314\python.exe -m pip install -r backend\requirements.txt
+C:\Users\axxx\AppData\Local\Programs\Python\Python314\python.exe -m uvicorn app.main:app --app-dir backend --reload --host 127.0.0.1 --port 8000
 ```
 
 The API runs at `http://127.0.0.1:8000`. Open `http://127.0.0.1:8000/docs` for Swagger API documentation.
