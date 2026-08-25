@@ -1,0 +1,1 @@
+Use Alembic migrations for production schema changes. The app creates tables automatically for simple local onboarding.
