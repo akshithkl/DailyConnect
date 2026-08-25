@@ -14,6 +14,7 @@ The free backend may take a few seconds to wake after inactivity. Create an acco
 ## Features
 
 - Account registration, login, JWT authentication, and logout
+- One-click demo access for  reviewers
 - Editable user profiles with bios and profile photos
 - Photo posts with captions, likes, comments, and owner-only deletion
 - Username search with a direct message action

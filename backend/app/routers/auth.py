@@ -35,6 +35,18 @@ def login(payload: LoginRequest, db: Session = Depends(get_db)):
     return TokenOut(access_token=create_access_token(str(user.id)), user=user_out(user))
 
 
+@router.post("/demo", response_model=TokenOut)
+def demo_login(db: Session = Depends(get_db)):
+    user = db.scalar(select(User).where(User.username == "demo"))
+    if not user:
+        user = User(username="demo", email="demo@dailyconnect.app", hashed_password=hash_password("DailyConnectDemo!2026"))
+        user.profile = Profile(bio="DailyConnect demo account")
+        db.add(user)
+        db.commit()
+        db.refresh(user)
+    return TokenOut(access_token=create_access_token(str(user.id)), user=user_out(user))
+
+
 @router.get("/me", response_model=UserOut)
 def me(user: User = Depends(current_user)):
     return user_out(user)
