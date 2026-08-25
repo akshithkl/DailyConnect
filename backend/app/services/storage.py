@@ -2,7 +2,9 @@ from io import BytesIO
 from pathlib import Path
 from uuid import uuid4
 
-import boto3
+import cloudinary
+import cloudinary.uploader
+import cloudinary.utils
 from fastapi import HTTPException, UploadFile, status
 from PIL import Image, ImageOps
 
@@ -30,6 +32,10 @@ def compress_image(data: bytes) -> bytes:
         return output.getvalue()
 
 
+def cloudinary_configured() -> bool:
+    return all((settings.cloudinary_cloud_name, settings.cloudinary_api_key, settings.cloudinary_api_secret))
+
+
 async def upload_image(file: UploadFile, prefix: str) -> str:
     data = await file.read()
     if len(data) > MAX_BYTES or file.content_type not in ALLOWED_TYPES:
@@ -41,28 +47,29 @@ async def upload_image(file: UploadFile, prefix: str) -> str:
     except Exception as exc:
         raise HTTPException(status_code=400, detail="Uploaded file is not a valid image") from exc
     key = f"{prefix}/{uuid4().hex}.jpg"
-    if not settings.r2_bucket_name or not settings.r2_public_url:
+    if not cloudinary_configured():
         local_file = LOCAL_UPLOAD_DIR / key
         local_file.parent.mkdir(parents=True, exist_ok=True)
         local_file.write_bytes(data)
         return key
-    client = boto3.client("s3", endpoint_url=f"https://{settings.r2_account_id}.r2.cloudflarestorage.com", aws_access_key_id=settings.r2_access_key_id, aws_secret_access_key=settings.r2_secret_access_key)
-    client.upload_fileobj(BytesIO(data), settings.r2_bucket_name, key, ExtraArgs={"ContentType": "image/jpeg"})
-    return key
+    cloudinary.config(cloud_name=settings.cloudinary_cloud_name, api_key=settings.cloudinary_api_key, api_secret=settings.cloudinary_api_secret, secure=True)
+    result = cloudinary.uploader.upload(BytesIO(data), folder=prefix, resource_type="image", format="jpg", quality="auto")
+    return result["public_id"]
 
 
 def public_url(key: str | None) -> str | None:
     if not key:
         return None
-    if settings.r2_public_url:
-        return f"{settings.r2_public_url.rstrip('/')}/{key}"
+    if cloudinary_configured():
+        cloudinary.config(cloud_name=settings.cloudinary_cloud_name, api_key=settings.cloudinary_api_key, api_secret=settings.cloudinary_api_secret, secure=True)
+        return cloudinary.utils.cloudinary_url(key, secure=True, resource_type="image", format="jpg")[0]
     return f"{settings.api_url.rstrip('/')}/uploads/{key}"
 
 
 def delete_image(key: str) -> None:
-    if settings.r2_bucket_name and settings.r2_public_url:
-        client = boto3.client("s3", endpoint_url=f"https://{settings.r2_account_id}.r2.cloudflarestorage.com", aws_access_key_id=settings.r2_access_key_id, aws_secret_access_key=settings.r2_secret_access_key)
-        client.delete_object(Bucket=settings.r2_bucket_name, Key=key)
+    if cloudinary_configured():
+        cloudinary.config(cloud_name=settings.cloudinary_cloud_name, api_key=settings.cloudinary_api_key, api_secret=settings.cloudinary_api_secret, secure=True)
+        cloudinary.uploader.destroy(key, resource_type="image")
         return
     local_file = LOCAL_UPLOAD_DIR / key
     if local_file.exists():
