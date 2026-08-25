@@ -4,6 +4,13 @@
 
 DailyConnect is a small-scale social communication platform for sharing photo moments and staying in touch. It is designed as a clear, interview-friendly portfolio project using one FastAPI backend, one database, and a simple React client.
 
+## Live Demo
+
+- **Website:** [dailyconnect-frontend.onrender.com](https://dailyconnect-frontend.onrender.com)
+- **API documentation:** [dailyconnect-api.onrender.com/docs](https://dailyconnect-api.onrender.com/docs)
+
+The free backend may take a few seconds to wake after inactivity. Create an account to explore the feed, comments, photo publishing, search, and messaging features.
+
 ## Features
 
 - Account registration, login, JWT authentication, and logout
